@@ -10,7 +10,9 @@ module.exports = function (err, req, res, next) {
     }
     else if(err.name === 'SequelizeUniqueConstraintError'){
         status = 400
-        msg = err.errors[0].message
+        msg = err.errors.map(error=>{
+            return error.message
+        }).join(', ')
     }
     res.status(status).json({error: msg})
 }

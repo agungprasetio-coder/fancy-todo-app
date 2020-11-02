@@ -38,8 +38,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       validate: {
         isYesterday(value){
-          if(new Date(value) < new Date()){
-            throw new ValidationError(`please input future time!`)
+          let d = new Date(value).toISOString().slice(0,10)
+          if(new Date(d).setHours(23,59) < new Date()){
+            throw new ValidationError(`Date only can set today or later!`)
+          }else{
+            this.due_date = new Date(d).setHours(23,59)
           }
         }
       }

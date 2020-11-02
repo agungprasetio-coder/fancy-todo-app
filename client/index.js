@@ -20,6 +20,8 @@ $(document).ready(function(){
 //handle click here di login page
 function showRegisterPage(){
     $("#register-page").show()
+    $("#login-email").val("")
+    $("#login-password").val("")
     $("#login-page").hide()
     
 }
@@ -37,13 +39,11 @@ function register(e){
         }
     })
     .done(response=>{
-        console.log(response)
         swal("Good Job!", "Your account has created", "success")
         $("#register-page").hide()
         $("#login-page").show()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -51,6 +51,8 @@ function register(e){
 //handle click here di register page 
 function showLoginPage(){
     $("#register-page").hide()
+    $("#register-email").val("")
+    $("#register-password").val("")
     $("#login-page").show()
 }
 
@@ -67,17 +69,19 @@ function login(e){
         }
     })
     .done(response=>{
-        swal("Good Job!", "You has signed in", "success")
+        swal("Login Success!", "You has signed in", "success")
         localStorage.setItem("token",response.access_token)
         $("#login-page").hide()
         $("#homepage").show()
-        $("#searchpage").hide()
+        $("#getTodoById").hide()
         $("#add-todo").show()
+        $("#add-title").val("")
+        $("#add-description").val("")
+        $("#due-date").val("")
         $("#list-todo").empty()
         listTodo()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -92,18 +96,20 @@ function onSignIn(googleUser) {
         }
     })
     .done(response=>{
-        swal("Good Job!", "You has signed in", "success")
+        swal("Login Success!", "You has signed in", "success")
         localStorage.setItem("token",response.access_token)
         $("#login-page").hide()
         $("#register-page").hide()
         $("#searchpage").hide()
         $("#homepage").show()
         $("#add-todo").show()
+        $("#add-title").val("")
+        $("#add-description").val("")
+        $("#due-date").val("")
         $("#list-todo").empty()
         listTodo()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -118,27 +124,34 @@ function listTodo(){
         }
     })
     .done(response=>{
-        console.log(response)
         response.data.forEach((todo, index)=>{
-            let status = todo.status
             $("#list-todo").append(`
             <div class="col-sm-3 mt-4">
-                <div class="card">
-                    <div class="card-body">
-                        <input type="checkbox" ${!todo.status?"":"checked"} class="checkbox" onclick="patchTodoById(${todo.id})">
-                        <h5 class="card-title">#${index + 1} ${todo.title}</h5>
-                        <p class="card-text">${todo.description}</p>
-                        <a class="btn btn-primary" onclick="getTodoById(${todo.id})">Detail</a>
-                        <a class="btn btn-danger" onclick="deleteTodoById(${todo.id})">Delete</a>
-                        
+                <div class="card bg-dark shadow-sm rounded">
+                    <div class="card-header border-bottom border-info text-info">
+                        <input type="checkbox" ${!todo.status?"":"checked"} id="todo-${todo.id}" class="checkbox" onclick="patchTodoById(${todo.id})">
+                        <label for="todo-${todo.id}" id="todo-${todo.id}" class="card-title">    
+                            <strong>#${index + 1} ${todo.title}</strong>
+                        </label>
+                    </div>
+                    <div class="card-body text-secondary">
+                        <p id="todo-${todo.id}" class="card-text">${todo.description}</p>
+                        <a id="todo-${todo.id}" class="btn btn-outline-info" onclick="getTodoById(${todo.id})">Detail</a>
+                        <a id="todo-${todo.id}" class="btn btn-outline-danger" onclick="deleteTodoById(${todo.id})">Delete</a>
                     </div>
                 </div>
             </div>`)
+            if(!todo.status) {
+                $(`label#todo-${todo.id}.card-title`).css({"text-decoration":"none"});
+                $(`p#todo-${todo.id}.card-text`).css({"text-decoration":"none"});
+            }else{
+                $(`label#todo-${todo.id}.card-title`).css({"text-decoration":"line-through"});
+                $(`p#todo-${todo.id}.card-text`).css({"text-decoration":"line-through"});
+            }
         })
         $("#list-todo").show()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -160,7 +173,6 @@ function deleteTodoById(id){
         listTodo()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -168,11 +180,15 @@ function deleteTodoById(id){
 function patchTodoById(id){
     const token = localStorage.getItem('token')
     let status
-    $(".checkbox").change(function() {
+    $(`#todo-${id}.checkbox`).change(function() {
         if(this.checked) {
             status = true
+            $(`label#todo-${id}.card-title`).css({"text-decoration":"line-through"});
+            $(`p#todo-${id}.card-text`).css({"text-decoration":"line-through"});
         }else{
             status = false
+            $(`label#todo-${id}.card-title`).css({"text-decoration":"none"});
+            $(`p#todo-${id}.card-text`).css({"text-decoration":"none"});
         }
         $.ajax({
             method: 'PATCH',
@@ -185,14 +201,12 @@ function patchTodoById(id){
             }
         })
         .done(response=>{
-            console.log(response)
-            swal("Good Job!", "Update todo status success", "success")
+            swal("Good Job!", `"${response.title}" has been updated to ${status?'done':'on going'}`, "success")
             $("#homepage").show()
             $("#add-todo").show()
             $("#list-todo").show()
         })
         .fail(err=>{
-            console.log(err)
             swal("Oh no!", err.responseJSON.error, "error")
         })
     });
@@ -210,34 +224,46 @@ function getTodoById(id){
         }
     })
     .done(response=>{
-        console.log(response)
         $("#login-page").hide()
         $("#register-page").hide()
         $("#list-todo").hide()
         $("#add-todo").hide()
         $("#getTodoById").empty()
         $("#getTodoById").append(`
-        <form class="mt-5" onsubmit="putTodo(event,${id})">
-            <label for="title">Title</label><br>
-            <input type="text" value="${response.data.title}" id="edit-title"><br><br>
-            <label for="description">Description</label><br>
-            <input type="text" value="${response.data.description}" id="edit-description"><br><br>
-            <label for="status">Status</label><br>
-            <input type="text" value="${response.data.status}" id="edit-status"><br><br>
-            <label for="due_date">Due date</label><br>
-            <input type="date" value="${new Date(response.data.due_date).toISOString().slice(0,10)}" id="edit-date"><br><br>
-            <label for="UserId">UserId</label><br>
-            <input type="text" value="${response.data.User.id}" disabled><br><br>
-            <label for="email">Email</label><br>
-            <input type="text" value="${response.data.User.email}" disabled><br><br>
-            <button class="btn btn-outline-dark">Update</button>
-        </form>
+        <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+            <div class="p-2 bg-light shadow" style="height: 78%; width: 30%; border-radius: 10px;">
+                <h2 align="center">Edit Todo</h2>
+                <form class="" onsubmit="putTodo(event,${id})">
+                    <div class="form-group">
+                        <label for="title">Title</label><br>
+                        <input class="form-control" type="text" value="${response.data.title}" id="edit-title">
+                    </div>
+                    <div class="form-group">    
+                        <label for="description">Description</label><br>
+                        <input class="form-control" type="text" value="${response.data.description}" id="edit-description">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-status">Status</label><br>
+                        <select class="custom-select" id="edit-status">
+                        <option ${!response.data.status?"":"selected"} value="true">Done</option>
+                        <option ${!response.data.status?"selected":""} value="false">On Going</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="due_date">Due date</label><br>
+                        <input class="form-control" type="date" value="${new Date(response.data.due_date).toISOString().slice(0,10)}" id="edit-date">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-block btn-dark">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         `)
         $("#homepage").show()
         $("#getTodoById").show()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -263,8 +289,7 @@ function putTodo(e, id){
         }
     })
     .done(response=>{
-        console.log(response)
-        swal("Good Job!", "Your todo has been updated", "success")
+        swal("Good Job!", `Your Todo has been updated`, "success")
         $("#getTodoById").hide()
         $("#homepage").show()
         $("#add-todo").show()
@@ -272,7 +297,6 @@ function putTodo(e, id){
         listTodo()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -296,13 +320,14 @@ function addTodo(e){
         }
     })
     .done(response=>{
-        console.log(response)
-        swal("Good Job!", "Add todo success", "success")
+        swal("Good Job!", `"${response.data.title}" success added to your todo list`, "success")
+        $("#add-title").val("")
+        $("#add-description").val("")
+        $("#due-date").val("")
         $("#list-todo").empty()
         listTodo()
     })
     .fail(err=>{
-        console.log(err)
         swal("Oh no!", err.responseJSON.error, "error")
     })
 }
@@ -320,10 +345,12 @@ function logout(e){
     $("#homepage").hide();
     $("#add-todo").hide();
     $("#list-todo").hide();
-    $("#login-page").show()
+    $("#login-page").show();
+    $("#getTodoById").hide();
+    $("#login-email").val("")
+    $("#login-password").val("")
     let auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
-        console.log('User signed out.');
-        swal("Good Bye!", "You has signed out.", "success")
+        swal("Logout Success!", "You has signed out.", "success")
     });
 }
