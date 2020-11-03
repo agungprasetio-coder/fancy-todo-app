@@ -8,12 +8,14 @@ $(document).ready(function(){
         $("#homepage").show()
         $("#add-todo").show()
         listTodo()
+        $("#show-footer").show()
     }else{
         $("#homepage").hide()
         $("#add-todo").hide()
         $("#list-todo").hide()
         $("#register-page").hide()
         $("#login-page").show()
+        $("#show-footer").hide()
     }
 })
 
@@ -108,6 +110,7 @@ function onSignIn(googleUser) {
         $("#due-date").val("")
         $("#list-todo").empty()
         listTodo()
+        $("#show-footer").show()
     })
     .fail(err=>{
         swal("Oh no!", err.responseJSON.error, "error")
@@ -126,7 +129,7 @@ function listTodo(){
     .done(response=>{
         response.data.forEach((todo, index)=>{
             $("#list-todo").append(`
-            <div class="col-sm-3 mt-4">
+            <div class="col-lg-3 mt-4">
                 <div class="card bg-dark shadow-sm rounded">
                     <div class="card-header border-bottom border-info text-info">
                         <input type="checkbox" ${!todo.status?"":"checked"} id="todo-${todo.id}" class="checkbox" onclick="patchTodoById(${todo.id})">
@@ -134,7 +137,7 @@ function listTodo(){
                             <strong>#${index + 1} ${todo.title}</strong>
                         </label>
                     </div>
-                    <div class="card-body text-secondary">
+                    <div class="card-body text-light">
                         <p id="todo-${todo.id}" class="card-text">${todo.description}</p>
                         <a id="todo-${todo.id}" class="btn btn-outline-info" onclick="getTodoById(${todo.id})">Detail</a>
                         <a id="todo-${todo.id}" class="btn btn-outline-danger" onclick="deleteTodoById(${todo.id})">Delete</a>
@@ -230,8 +233,8 @@ function getTodoById(id){
         $("#add-todo").hide()
         $("#getTodoById").empty()
         $("#getTodoById").append(`
-        <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
-            <div class="p-2 bg-light shadow" style="height: 78%; width: 30%; border-radius: 10px;">
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="p-2 shadow bg-light" style="height: 460px; width: 407px; border-radius: 10px;">
                 <h2 align="center">Edit Todo</h2>
                 <form class="" onsubmit="putTodo(event,${id})">
                     <div class="form-group">
