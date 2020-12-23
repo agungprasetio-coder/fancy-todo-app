@@ -227,6 +227,7 @@ function getTodoById(id){
         }
     })
     .done(response=>{
+        console.log(response)
         $("#login-page").hide()
         $("#register-page").hide()
         $("#list-todo").hide()

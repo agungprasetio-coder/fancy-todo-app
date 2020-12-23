@@ -3,7 +3,6 @@ const { Todo, User } = require('../models')
 class Controller {
     static todos(req, res, next){
         const { id } = req.loggedInUser // didapat dari middleware authentication
-        console.log(id)
         Todo.findAll({
             where: {
                 UserId: id // cari semua todo berdasar UserId = id yang didapat dari req.loggedInUser
@@ -40,10 +39,19 @@ class Controller {
     static findById(req, res, next){
         const id = req.params.id
         Todo.findByPk(id,{
-            include: [User]
+            include:[User]
         })
         .then(data=>{
-            res.status(200).json({data})
+            let todo = {
+                id: data.id,
+                title: data.title,
+                description: data.description,
+                status: data.status,
+                due_date: data.due_date,
+                UserId: data.UserId,
+                email: data.User.email
+            }
+            res.status(200).json({data: todo})
         })
         .catch(err=>{
             next(err)
