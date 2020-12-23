@@ -11,9 +11,6 @@
   "author": "Agung Adi Prasetio",
   "license": "ISC",
   "description": "",
-  "engines": {
-    "node": "10.19.0"
-  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
